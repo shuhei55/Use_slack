@@ -9,3 +9,7 @@ command! -nargs=1 SlackSnedMessage call slack#SendMessage(<f-args>)
 command! -nargs=1 SlackChangeChannel call slack#ChangeChannel(<f-args>)
 
 command! SlackCheckNowChannel call slack#CheckNowChannel()
+
+command! SlackRubyTest call slack#rubytest()
+
+command! -nargs=1 SlackRubySendMessage call slack#SendMessageRuby(<f-args>)
