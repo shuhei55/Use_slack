@@ -38,6 +38,13 @@ EOF
 endfunction
 
 function! slack#CheckHistory() abort
+    if bufnr('slackbuf') == -1
+        vsplit slackbuf
+        setlocal buftype=nowrite
+        setlocal bufhidden=wipe
+    else
+        %d
+    endif
 ruby << EOF
 
     require 'net/http'
@@ -49,11 +56,13 @@ ruby << EOF
     json_res = JSON.parse(res.body)
     res_re = json_res["messages"].reverse
 
-    res_re.each do |res|
+    json_res["messages"].each do |res|
         if res["type"] == "message" then
             user_name = res["user"]
             text = res["text"]
-            puts "#{user_name}:#{text}"
+            VIM.command("let s:slack_user = '#{user_name}'")
+            VIM.command("let s:slack_text = '#{text}'")
+            VIM.command("call append('.', '#{user_name}' . ':' . '#{text}')")
         end
     end
 EOF
