@@ -33,5 +33,48 @@ ruby << EOF
         'as_user' => 'true'
     })
     puts response.body
+
+EOF
+endfunction
+
+function! slack#CheckHistory() abort
+ruby << EOF
+
+    require 'net/http'
+    require 'json'
+    res = Net::HTTP.post_form(URI.parse('https://slack.com/api/channels.history'),{
+        'token' => VIM.evaluate('s:slack_token'),
+        'channel' => VIM.evaluate('s:slack_channel')
+    })
+    json_res = JSON.parse(res.body)
+    res_re = json_res["messages"].reverse
+
+    res_re.each do |res|
+        if res["type"] == "message" then
+            user_name = res["user"]
+            text = res["text"]
+            puts "#{user_name}:#{text}"
+        end
+    end
+EOF
+endfunction
+
+function! slack#ListChannel() abort
+ruby << EOF
+    
+    require 'net/http'
+    require 'json'
+    res = Net::HTTP.post_form(URI.parse('https://slack.com/api/channels.list'),{
+        'token' => VIM.evaluate('s:slack_token'),
+    })
+
+
+    json_res = JSON.parse(res.body)
+    json_res["channels"].each do |res|
+        channel_name = res["name"]
+        channel_id = res["id"]
+        puts " - #{channel_name}: #{channel_id}"
+    end
+
 EOF
 endfunction
