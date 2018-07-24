@@ -1,5 +1,5 @@
 let s:slack_token = get(g:, 'slack_token', '')
-let s:slack_channel = "general"
+let s:slack_channel = "CBTQFF9D1"
 
 function! slack#SendMessage(Message) abort
 
@@ -59,9 +59,21 @@ ruby << EOF
     json_res["messages"].each do |res|
         if res["type"] == "message" then
             user_name = res["user"]
+            if user_name != nil
+                user_name.size.times do |i|
+                    if user_name[i] == "'" then
+                        user_name[i] = '"'
+                    end
+                end
+            end
             text = res["text"]
-            VIM.command("let s:slack_user = '#{user_name}'")
-            VIM.command("let s:slack_text = '#{text}'")
+            if text != nil
+                text.size.times do |i|
+                    if text[i] == "'" then
+                        text[i] = '"'
+                    end
+                end
+            end
             VIM.command("call append('.', '#{user_name}' . ':' . '#{text}')")
         end
     end
