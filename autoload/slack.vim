@@ -53,6 +53,7 @@ ruby << EOF
         'token' => VIM.evaluate('s:slack_token'),
         'channel' => VIM.evaluate('s:slack_channel')
     })
+
     json_res = JSON.parse(res.body)
     res_re = json_res["messages"].reverse
 
@@ -96,6 +97,67 @@ ruby << EOF
         channel_id = res["id"]
         puts " - #{channel_name}: #{channel_id}"
     end
+
+EOF
+endfunction
+
+function! slack#SendThisFile(slack_comment) abort
+ruby << EOF
+    require 'net/http'
+    require 'json'
+
+    cb = Vim::Buffer.current
+    num = cb.count
+    slack_file_buf = ""
+    num.times do |i|
+        slack_file_buf += cb.itself[i+1] + "\n"
+    end
+
+    res = Net::HTTP.post_form(URI.parse('https://slack.com/api/files.upload'),{
+                    'token' => VIM.evaluate('s:slack_token'),
+                    'channels' => VIM.evaluate('s:slack_channel'),
+                    'initial_comment' => VIM.evaluate('a:slack_comment'),
+                    'content' => slack_file_buf,
+                    'title' => VIM.evaluate('expand("%")'),
+                    'filetype' => VIM.evaluate('expand("e:%")')
+                    })
+    json_res = JSON.parse(res.body)
+
+    puts json_res
+EOF
+endfunction
+
+function! slack#SendPartOfThisFile(slack_comment, l1, l2)
+ruby << EOF
+    require 'net/http'
+    require 'json'
+
+    cb = Vim::Buffer.current
+    if VIM.evaluate('a:l1').to_i < VIM.evaluate('a:l2').to_i then
+        above = VIM.evaluate('a:l1').to_i
+        under = VIM.evaluate('a:l2').to_i
+    elsif
+        above = VIM.evaluate('a:l2').to_i
+        under = VIM.evaluate('a:l1').to_i
+    end
+        
+    num = 1 + under - above
+    slack_file_buf = ""
+    num.times do |i|
+        slack_file_buf += cb.itself[above + i] + "\n"
+    end
+
+    res = Net::HTTP.post_form(URI.parse('https://slack.com/api/files.upload'),{
+                    'token' => VIM.evaluate('s:slack_token'),
+                    'channels' => VIM.evaluate('s:slack_channel'),
+                    'initial_comment' => VIM.evaluate('a:slack_comment'),
+                    'content' => slack_file_buf,
+                    'title' => VIM.evaluate('expand("%")'),
+                    'filetype' => VIM.evaluate('expand("e:%")')
+                    })
+    json_res = JSON.parse(res.body)
+
+    puts json_res
 
 EOF
 endfunction

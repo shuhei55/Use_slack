@@ -17,3 +17,7 @@ command! -nargs=1 SlackRubySendMessage call slack#SendMessageRuby(<f-args>)
 command! SlackRubyCheckHistory call slack#CheckHistory()
 
 command! SlackListChannel call slack#ListChannel()
+
+command! -nargs=1 SlackSendThisFile call slack#SendThisFile(<f-args>)
+
+command! -nargs=* SlackSendPartOfThisFile call slack#SendPartOfThisFile(<f-args>)
